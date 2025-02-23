@@ -1,14 +1,31 @@
 require "ui/tabs"
 require "ui/text"
+require "ui/heroCard"
+require "logic.hero"
 
 local uiRoot
 
 function love.load()
+    heroCount = 5
+    heroes = {}
+    for i = 1, heroCount do
+        table.insert(heroes, getRandomHero())
+    end
+
+    local rosterTab = {
+        name = "Roster",
+        elements = {}
+    }
+
+    for i = 1, heroCount do
+        table.insert(rosterTab.elements, HeroCard:new(30 + (i - 1) * 270, 60, heroes[i]))
+    end
+
     -- Define tab content
     local tabData = {
-        { name = "Home",     elements = { Text:new(30, 60, "Welcome to Home!", foreground, 24) } },
-        { name = "Settings", elements = { Text:new(30, 60, "Settings Panel", foreground, 24) } },
-        { name = "About",    elements = { Text:new(30, 60, "About this Game", foreground, 24) } }
+        { name = "Home",  elements = { Text:new(30, 60, "Welcome to Home!", foreground) } },
+        rosterTab,
+        { name = "About", elements = { Text:new(30, 60, "About this Game", foreground) } }
     }
 
     local windowWidth = love.graphics.getWidth()

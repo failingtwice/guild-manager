@@ -1,90 +1,60 @@
+require "ui/element"
+require "ui/panel"
 require "ui/text"
+require "ui/theme"
 
-function HeroCard(x, y, hero)
-    local self = {
+HeroCard = setmetatable({}, { __index = Element })
+HeroCard.__index = HeroCard
+
+function HeroCard:new(x, y, hero)
+    local self = Element.new(self, x, y, 250, 350) -- Fixed card size
+
+    -- Background Panel
+    self.panel = Panel:new(x, y, self.width, self.height, heroCardBackground)
+
+    -- Hero Image (if exists)
+    self.heroImage = hero.portrait and {
+        image = hero.portrait,
         x = x,
         y = y,
         width = 250,
-        height = 300,
-        hero = hero,
-        imgSize = 250, -- Fixed size for square image
-    }
+        height = 250
+    } or nil
 
-    function self:draw()
-        local paddingLeft = 6;
-        -- Draw Hero Image (Always 250x250)
-        love.graphics.setColor(1, 1, 1, 1)
+    -- Hero Name
+    self.nameText = Text:new(x + 6, y + 255, hero.name, foreground)
 
-        if self.hero.portrait then
-            love.graphics.draw(self.hero.portrait, self.x, self.y, 0, self.imgSize / self.hero.portrait:getWidth(),
-                self.imgSize / self.hero.portrait:getHeight())
-        else
-            -- Placeholder for missing image
-            love.graphics.setColor(0.5, 0.5, 0.5)
-            love.graphics.rectangle("fill", self.x, self.y, self.imgSize, self.imgSize)
-            love.graphics.setColor(1, 1, 1)
-            love.graphics.print("No Image", self.x + 85, self.y + 120)
-        end
+    -- Race, Class, Height, Weight
+    self.raceText = Text:new(x + 6, y + 275, hero.race, foreground)
+    self.classText = Text:new(x + 6, y + 290, hero.class, foreground)
+    self.heightText = Text:new(x + 6, y + 305, "Height: " .. hero.height .. "cm", foreground)
+    self.weightText = Text:new(x + 6, y + 320, "Weight: " .. hero.weight .. "kg", foreground)
 
-        -- Card Background
-        love.graphics.setColor(0.85, 0.85, 0.9)
-        love.graphics.rectangle("fill", self.x, self.y + self.imgSize, self.width, 185)
+    -- Add elements to panel
+    self.panel:addChild(self.nameText)
+    self.panel:addChild(self.raceText)
+    self.panel:addChild(self.classText)
+    self.panel:addChild(self.heightText)
+    self.panel:addChild(self.weightText)
 
-        -- Hero Name
-        Heading(self.x + paddingLeft, self.y + self.imgSize + 5, self.hero.name, "dark")
+    return setmetatable(self, HeroCard)
+end
 
-        -- Race & Class
-        Text(self.x + paddingLeft, self.y + self.imgSize + 40, self.hero.race, "dark")
-        Text(self.x + paddingLeft, self.y + self.imgSize + 60, self.hero.class, "dark")
-        Text(self.x + paddingLeft, self.y + self.imgSize + 80, "Height: " .. self.hero.height .. "cm", "dark")
-        Text(self.x + paddingLeft, self.y + self.imgSize + 100, "Weight: " .. self.hero.weight .. "kg", "dark")
+function HeroCard:draw()
+    -- Draw Background
+    self.panel:draw()
 
-
-        -- Stats
-        -- Text(self.x + paddingLeft, self.y + self.imgSize + 60, "Attack Damage: " .. self.hero.attack, "dark")
-        -- self:drawBlockProgressBar(self.x + paddingLeft, self.y + self.imgSize + 80, self.hero.attack)  -- Red
-        -- Text(self.x + paddingLeft, self.y + self.imgSize + 100, "Health: " .. self.hero.health, "dark")
-        -- self:drawBlockProgressBar(self.x + paddingLeft, self.y + self.imgSize + 120, self.hero.health) -- Green
-        -- Text(self.x + paddingLeft, self.y + self.imgSize + 140, "Mana: " .. self.hero.mana, "dark")
-        -- self:drawBlockProgressBar(self.x + paddingLeft, self.y + self.imgSize + 160, self.hero.mana)   -- Blue
+    -- Draw Hero Image (if available)
+    if self.heroImage then
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.draw(self.heroImage.image, self.heroImage.x, self.heroImage.y, 0,
+            self.heroImage.width / self.heroImage.image:getWidth(),
+            self.heroImage.height / self.heroImage.image:getHeight())
+    else
+        -- Placeholder for missing image
+        love.graphics.setColor(0.5, 0.5, 0.5)
+        love.graphics.rectangle("fill", self.x, self.y, 250, 250)
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.print("No Image", self.x + 85, self.y + 120)
     end
-
-    -- Block-style progress bar
-    function self:drawBlockProgressBar(x, y, value)
-        local maxBlocks = 20  -- Total number of blocks
-        local blockWidth = 10 -- Width of each block
-        local gap = 2         -- Gap between blocks
-        local maxStat = 100   -- Normalize stats to 100
-
-        local filledBlocks = math.min(math.floor(value / maxStat * maxBlocks), maxBlocks)
-
-        -- Generate color based on number of filled blocks
-        local function getColor(percentage)
-            if percentage < 0.5 then
-                -- From Red (0.8, 0, 0) to Yellow (0.8, 0.8, 0)
-                local g = percentage * 2 * 0.8 -- Increase green
-                return { 0.8, g, 0, 1 }
-            else
-                -- From Yellow (0.8, 0.8, 0) to Green (0, 0.8, 0)
-                local r = (1 - percentage) * 2 * 0.8 -- Decrease red
-                return { r, 0.8, 0, 1 }
-            end
-        end
-
-        local fillColor = getColor(filledBlocks / maxBlocks) -- Determine color for all filled blocks
-
-        -- Draw filled blocks with the same determined color
-        love.graphics.setColor(fillColor)
-        for i = 0, filledBlocks - 1 do
-            love.graphics.rectangle("fill", x + i * (blockWidth + gap), y, blockWidth, 10)
-        end
-
-        -- Draw remaining unfilled blocks as gray
-        love.graphics.setColor(0.3, 0.3, 0.3)
-        for i = filledBlocks, maxBlocks - 1 do
-            love.graphics.rectangle("fill", x + i * (blockWidth + gap), y, blockWidth, 10)
-        end
-    end
-
-    return self
 end

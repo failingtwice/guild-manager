@@ -7,3 +7,5 @@ buttonForeground = { 1, 1, 1, 1 }
 
 textFont = love.graphics.newFont("fonts/MedodicaRegular.otf", 16)
 textFont:setFilter("nearest", "nearest")
+
+heroCardBackground = { 0.9, 0.9, 0.9, 1 }
