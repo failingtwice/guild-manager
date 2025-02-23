@@ -1,34 +1,45 @@
 require "ui/element"
+require "ui/theme"
+require "ui/text"
 
 Button = setmetatable({}, { __index = Element })
 Button.__index = Button
 
 function Button:new(x, y, width, height, text, onClick)
     local self = Element.new(self, x, y, width, height)
-    self.text = text
     self.onClick = onClick
     self.isHovered = false
-    return setmetatable(self, Button) -- Ensure metatable is set
+
+    -- Create centered text (initial placeholder, position set in update)
+    self.textElement = Text:new(x, y, text, buttonForeground, 16)
+
+    return setmetatable(self, Button)
+end
+
+function Button:update(mx, my)
+    self.isHovered = mx >= self.x and mx <= self.x + self.width and my >= self.y and my <= self.y + self.height
+
+    -- Center text manually
+    local textWidth = self.textElement.font:getWidth(self.textElement.text)
+    local textHeight = self.textElement.font:getHeight()
+
+    self.textElement.x = self.x + (self.width - textWidth) / 2
+    self.textElement.y = self.y + (self.height - textHeight) / 2
 end
 
 function Button:draw()
     -- Change color if hovered
     if self.isHovered then
-        love.graphics.setColor(0.3, 0.3, 0.3)
+        love.graphics.setColor(buttonHovered)
     else
-        love.graphics.setColor(0.2, 0.2, 0.2)
+        love.graphics.setColor(buttonBackground)
     end
 
-    -- Draw button
+    -- Draw button background
     love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
 
     -- Draw text
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.print(self.text, self.x + 10, self.y + 10)
-end
-
-function Button:update(mx, my)
-    self.isHovered = mx >= self.x and mx <= self.x + self.width and my >= self.y and my <= self.y + self.height
+    self.textElement:draw()
 end
 
 function Button:mousepressed(mx, my, button)

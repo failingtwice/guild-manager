@@ -6,12 +6,17 @@ local uiRoot
 function love.load()
     -- Define tab content
     local tabData = {
-        { name = "Home",     elements = { Text:new(30, 60, "Welcome to Home!", { 1, 1, 1 }, 24) } },
-        { name = "Settings", elements = { Text:new(30, 60, "Settings Panel", { 1, 1, 1 }, 24) } },
-        { name = "About",    elements = { Text:new(30, 60, "About this Game", { 1, 1, 1 }, 24) } }
+        { name = "Home",     elements = { Text:new(30, 60, "Welcome to Home!", foreground, 24) } },
+        { name = "Settings", elements = { Text:new(30, 60, "Settings Panel", foreground, 24) } },
+        { name = "About",    elements = { Text:new(30, 60, "About this Game", foreground, 24) } }
     }
 
-    uiRoot = Tabs:new(20, 20, 600, 400, tabData)
+    local windowWidth = love.graphics.getWidth()
+    local windowHeight = love.graphics.getHeight()
+
+    local backgroundColor = { 0.95, 0.95, 0.95, 1 }
+    uiRoot = Panel:new(0, 0, windowWidth, windowHeight, backgroundColor)
+    uiRoot:addChild(Tabs:new(0, 0, windowWidth, windowHeight, tabData))
 end
 
 function love.update(dt)
