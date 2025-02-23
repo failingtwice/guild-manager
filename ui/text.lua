@@ -1,52 +1,18 @@
-local textFont = love.graphics.newFont("fonts/MedodicaRegular.otf", 16) -- Load font at 24px size
-local headingFont = love.graphics.newFont("fonts/yoster.ttf", 24)       -- Load font at 24px size
-textFont:setFilter("nearest", "nearest")
-headingFont:setFilter("nearest", "nearest")
+require "ui/element"
 
-local colorDark = { 0.15, 0.15, 0.1 }
-local colorLight = { 0.85, 0.85, 0.9 }
+Text = setmetatable({}, { __index = Element })
+Text.__index = Text
 
-function Text(x, y, text, color)
-    local prevFont = love.graphics.getFont()
-
-    if not text then
-        text = "No text"
-    end
-
-    if color == "dark" then
-        color = colorDark
-    elseif color == "light" then
-        color = colorLight
-    end
-
-    love.graphics.setFont(textFont)
-    love.graphics.setColor(color)
-    love.graphics.print(text, x, y)
-
-    love.graphics.setFont(prevFont)
+function Text:new(x, y, text, color, fontSize)
+    local self = Element.new(self, x, y, 0, 0) -- No fixed width/height
+    self.text = text
+    self.color = color or { 1, 1, 1 }
+    self.font = love.graphics.newFont(fontSize or 14)
+    return setmetatable(self, Text) -- Ensure metatable is set
 end
 
-function Heading(x, y, text, color)
-    local prevFont = love.graphics.getFont()
-
-    if not text then
-        text = "No text"
-    end
-
-    if color == "dark" then
-        color = colorDark
-    elseif color == "light" then
-        color = colorLight
-    end
-
-    love.graphics.setFont(headingFont)
-    love.graphics.setColor(color)
-    love.graphics.print(text, x, y)
-
-    love.graphics.setFont(prevFont)
+function Text:draw()
+    love.graphics.setColor(self.color)
+    love.graphics.setFont(self.font)
+    love.graphics.print(self.text, self.x, self.y)
 end
-
-return {
-    Text = Text,
-    Heading = Heading
-}
